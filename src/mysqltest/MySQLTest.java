@@ -4,12 +4,7 @@
  */
 package mysqltest;
 
-import com.mysql.cj.jdbc.Driver;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.PreparedStatement;
+import dao.UserDAO;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -21,191 +16,66 @@ import java.util.Scanner;
 public class MySQLTest {
 
     public static Scanner scanner = new Scanner(System.in);
-    //Constant
-    private static final String INSERT = "INSERT INTO list_task.user (email, password) VALUES (?, ?)";
-    private static final String SELECT = "SELECT * FROM list_task.user";
-    private static final String UPDATE = "UPDATE list_task.user SET email = ?, password = ? WHERE id = ?";
-    private static final String DELETE = "DELETE FROM list_task.user WHERE id = ?";
-    
-    private static final String URL = "jdbc:mysql://localhost:3306/list_task";
-    private static final String USER = "root";
-    private static final String PASSWORD = "Pass1234!";
 
     public static void main(String[] args) {
-
-        System.out.print("Enter new email: ");
+        
+        System.out.println("==== INSERT USER ====");
+        System.out.printf("Enter email: ");
         String email = scanner.nextLine();
-        System.out.print("Enter new password: ");
+        System.out.printf("Enter password: ");
         String password = scanner.nextLine();
-
+        
         User u = new User();
         u.setEmail(email);
         u.setPassword(password);
-
-        insertUser(u);
-
-    }
-
-    //STUDYING ABOUT CRUD - CREATE, READ, UPDATE AND DELETE
-    //READ
-    public static ArrayList<User> searchUser() {
-
-        ArrayList<User> users = new ArrayList();
-        //TRY THE CONNECTION AND IF THERE IS SOMETHING WRONG CLOSE AND CATCH A ERROR MESSAGE
-        try {
-
-            //CREATING THE DRIVERS TO CONNECT TO MYSQL
-            Driver driver = new Driver();
-            DriverManager.registerDriver(driver);
-
-            //CREATING A CONNECTION WITH DRIVER FROM JAVA
-            Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/list_task", "root", "Pass1234!");
-
-            //CRETING A STATEMENT TO SEND TO DRIVE AND EXECUTE ON MYSQL
-            PreparedStatement stmt = c.prepareStatement(SELECT);
-
-            //STORING THE RESULT INSIDE THE RESULTSET
-            ResultSet rs = stmt.executeQuery();
-
-            //WHILE THERE IS A LINE TO READ WE STORE EVERY COLUMN INSIDE THE VALUES AND PRINT THEM AFTER
-            while (rs.next()) {
-
-                int id = rs.getInt("id");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-
-                //Instacia um novo object
-                User u = new User();
-                u.setId(id);
-                u.setEmail(email);
-                u.setPassword(password);
-
-                users.add(u);
-
-            }
-
-            //WE NEED TO CLOSE THE STATEMENT AND CONNECTION, BECAUSE IT USE MEMORY
-            stmt.close();
-            c.close();
-
-            //IF THERE IS NO RIGHT CONNECTION, IT CLOSE AND GIVE THE ERROR MESSAGE
-        } catch (SQLException e) {
-            System.out.println("Error when registering driver or connecting: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return users;
-    }
-
-    //CREATE
-    public static boolean insertUser(User u) {
-
-        boolean sucess = false;
-
-        try {
-
-            //CREATING THE DRIVERS TO CONNECT TO MYSQL
-            Driver driver = new Driver();
-            DriverManager.registerDriver(driver);
-
-            //CREATING A CONNECTION WITH DRIVER FROM JAVA
-            Connection c = DriverManager.getConnection(URL, USER, PASSWORD);
-
-            //CRETING A STATEMENT TO SEND TO DRIVE AND EXECUTE ON MYSQL, ? will be the value we will switch
-            PreparedStatement stmt = c.prepareStatement(INSERT);
-
-            //SETTING THE VALUES INSIDE THE '?' WITH STMT
-            stmt.setString(1, u.getEmail());
-            stmt.setString(2, u.getPassword());
-
-            //STORE INSIDE THE IN ROWSAFFECTED THE UPDATE THAT WAS MADE INSIDE THE STMT
-            int rowsAffected = stmt.executeUpdate();
-
-            //CHECK IF THE UPDATE WAS SUCESSFULLY BY CHEKING HOW MANY ROWS WAS AFFECTED INSIDE MYSQL
-            if (rowsAffected > 0) {
-                sucess = true;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error when registering driver or connecting: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return sucess;
-    }
-
-    //UPDATE
-    public static boolean updateUser(User u) {
-
-        boolean sucess = false;
-
-        try {
-
-            //CREATING THE DRIVERS TO CONNECT TO MYSQL
-            Driver driver = new Driver();
-            DriverManager.registerDriver(driver);
-
-            //CREATING A CONNECTION WITH DRIVER FROM JAVA
-            Connection c = DriverManager.getConnection(URL, USER, PASSWORD);
-
-            //CRETING A STATEMENT TO SEND TO DRIVE AND EXECUTE ON MYSQL, ? will be the value we will switch
-            PreparedStatement stmt = c.prepareStatement(UPDATE);
-
-            //SETTING THE VALUES INSIDE THE '?' WITH STMT
-            stmt.setString(1, u.getEmail());
-            stmt.setString(2, u.getPassword());
-            stmt.setInt(3, u.getId());
-
-            //STORE INSIDE THE IN ROWSAFFECTED THE UPDATE THAT WAS MADE INSIDE THE STMT
-            int rowsAffected = stmt.executeUpdate();
-
-            //CHECK IF THE UPDATE WAS SUCESSFULLY BY CHEKING HOW MANY ROWS WAS AFFECTED INSIDE MYSQL
-            if (rowsAffected > 0) {
-                sucess = true;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error when registering driver or connecting: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return sucess;
         
-    }
-
-    public static boolean deleteUser(User u) {
-
-        boolean sucess = false;
+        boolean insert = UserDAO.insertUser(u);
         
-        try {
+        if(insert){
+            System.out.println("User inserted sucessfully!");
+        } else{
+            System.out.println("Error while trying to insert user.");
+        } 
 
-            //CREATING THE DRIVERS TO CONNECT TO MYSQL
-            Driver driver = new Driver();
-            DriverManager.registerDriver(driver);
+        
+          
+        /*
+        System.out.println("==== SEARCH USER ====");
 
-            //CREATING A CONNECTION WITH DRIVER FROM JAVA
-            Connection c = DriverManager.getConnection(URL, USER, PASSWORD);
-
-            //CRETING A STATEMENT TO SEND TO DRIVE AND EXECUTE ON MYSQL, ? will be the value we will switch
-            PreparedStatement stmt = c.prepareStatement(DELETE);
-
-            //SETTING THE VALUES INSIDE THE '?' WITH STMT
-            stmt.setInt(1, u.getId());
-
-            //STORE INSIDE THE IN ROWSAFFECTED THE UPDATE THAT WAS MADE INSIDE THE STMT
-            int rowsAffected = stmt.executeUpdate();
-
-            //CHECK IF THE UPDATE WAS SUCESSFULLY BY CHEKING HOW MANY ROWS WAS AFFECTED INSIDE MYSQL
-            if (rowsAffected > 0) {
-                sucess = true;
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error when registering driver or connecting: " + e.getMessage());
-            e.printStackTrace();
+        ArrayList<User> users = UserDAO.searchUser();
+        
+        for (User u : users){
+            System.out.println("["+ u.getId() + "]" + u.getEmail());
         }
-        
-        return sucess;
+
+          
+        System.out.println("==== DELETE USER ====");
+        //I created an Array inside the class User and instantiated the method searchUser inside the class UserDAO
+        ArrayList<User> users = UserDAO.searchUser();
+
+        //For every user inside the ArrayList users I will print its ID and Email
+        for (User u : users) {
+            System.out.println("[ " + u.getId() + " ]" + u.getEmail());
+        }
+
+        //I will ask to enter what Id they want to delete using the ID from the data base.
+        System.out.printf("Enter the User ID you want to delete: ");
+        int id = scanner.nextInt();
+        scanner.nextLine(); //clean buffer
+
+        //Creating a new Object u and then set the information the user entered inside the ID
+        User u = new User();
+        u.setId(id);
+
+        //create a boolean variable to send the 'u' information to the method deleteuser
+        boolean deleted = UserDAO.deleteUser(u);
+
+        //if the variable is true, it means that the user was deleted, otherwise it didnt find and will give an error
+        if (deleted) {
+            System.out.println("User deleted sucessfully!");
+        } else {
+            System.out.println("Error trying to delete user!");
+        }                   */
     }
 
 }
